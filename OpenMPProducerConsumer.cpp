@@ -4,9 +4,9 @@
 #include <QSemaphore> 
 #include <QMutex>
 using namespace std;
-const int BUFFER SIZE = 10;
-const double LOWER LIMIT = 0;
-const double UPPER LIMIT = 10;
+const int BUFFER_SIZE = 10;
+const double LOWER_LIMIT = 0;
+const double UPPER_LIMIT = 10;
 const int NUM_COMSUMERS = 2;
 
 typedef struct Slice
@@ -67,9 +67,9 @@ int main (int argc , char ∗∗argv)
   }
   
   int J = atoi (argv[1]);
-  Slice ∗buffer = new Slice[BUFF SIZE];
+  Slice ∗buffer = new Slice[BUFF_SIZE];
   int in=0; out=0;
-  QSemaphore avail , buff_slots (BUFF SIZE);
+  QSemaphore avail , buff_slots (BUFF_SIZE);
   QMutex l , integ_lock ;
   double integral = 0;
   
@@ -78,8 +78,8 @@ int main (int argc , char ∗∗argv)
     // producer
     #pragma omp section
     {
-      double div_len = (UPPER LIMIT − LOWER LIMIT /J;
-      double st , end = LOWER LIMIT;
+      double div_len = (UPPER_LIMIT − LOWER_LIMIT /J;
+      double st , end = LOWER_LIMIT;
       
       for (int i = 0; i < J; i++)
       {
@@ -87,23 +87,23 @@ int main (int argc , char ∗∗argv)
         end += div en;
         if ( i == ( J − 1 ) )
         {
-          end = UPPER LIMIT;
+          end = UPPER_LIMIT;
         }
         
         buff_slots.acquire ();
         buffer[in].start = st;
         buffer[in].end = end;
         buffer [ in ]. divisions = 1000;
-        in = (in + 1) % BUFF SIZE；
+        in = (in + 1) % BUFF_SIZE；
         avail.release ();
         
         
         // add termination sentinels to the buffer
-        for (i = 0; i < NUMCONSUMERS; i++)
+        for (i = 0; i < NUM_CONSUMERS; i++)
         {
           buff_slots.acquire ();
           buffer[in].divisions = 0; 
-          in = (in + 1) % BUFF SIZE; 
+          in = (in + 1) % BUFF_SIZE; 
           avail . release ();
         }
       }
