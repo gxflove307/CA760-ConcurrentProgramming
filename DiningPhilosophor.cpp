@@ -2,6 +2,10 @@
 #include <semaphore.h> 
 #include <stdio.h> 
 
+/*
+============================================哲学家就餐问题============================================
+来源：https://www.geeksforgeeks.org/dining-philosopher-problem-using-semaphores/
+*/
 #define N 5 
 #define THINKING 2 
 #define HUNGRY 1 
