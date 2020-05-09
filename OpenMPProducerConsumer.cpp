@@ -48,6 +48,7 @@ void integrate (Slice ∗buffer , QSemaphore &buff_slots, QSemaphore &avail, QMu
     out = (out + 1) % BUFFER_SIZE;
     mutex.unlock(); //执行完临界区的数据操作后，释放锁
    
+    //消费者从缓冲区中读取需要处理的数据
     double st = buffer[tmp_out].start;
     double en = buffer[tmp_out].end;
     double div = buffer[tmp_out].divisions;
@@ -112,7 +113,7 @@ int main (int argc , char ∗∗argv)
           end = UPPER_LIMIT;
         }
         
-        // 进入临界区
+        // 进入临界区后，生产者线程往缓冲区中投放待处理数据
         buff_slots.acquire ();
         buffer[in].start = st; //把每个批次的积分上界和下界存到对应位置的缓冲区中，
                                 //比如：对于下界是100，下界是0，要分成10个批次的定积分来说，第一个批次/迭代的上界和下界是0~10，
