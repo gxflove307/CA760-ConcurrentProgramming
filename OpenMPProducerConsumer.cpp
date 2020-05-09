@@ -4,11 +4,18 @@
 #include <QSemaphore> 
 #include <QMutex>
 using namespace std;
-const int BUFFER_SIZE = 10;
-const double LOWER_LIMIT = 0;
-const double UPPER_LIMIT = 10;
-const int NUM_COMSUMERS = 2;
 
+/*
+=====================================用“生产者-消费者”的模式解决积分计算的问题============================================
+*/
+const int BUFFER_SIZE = 10; //定义一个缓冲区
+const double LOWER_LIMIT = 0; //定义定积分的下界为0
+const double UPPER_LIMIT = 10; //定义定积分的上界为10
+const int NUM_COMSUMERS = 2; //消费者的数量为2
+
+/*
+构造一个数据结构，这个数据结构记录了在每一个积分步长（小梯形）的积分上界，下界
+*/
 typedef struct Slice
 {
   double start;
@@ -21,7 +28,7 @@ double func (double x)
   return (sin (x)); 
 }
 
-void integrate (Slice ∗buffer , QSemaphore &buff slots, QSemaphore &avail, QMutex &l, int &out, 
+void integrate (Slice ∗buffer , QSemaphore &buff_slots, QSemaphore &avail, QMutex &l, int &out, 
                 QMutex &res lock, double &res)
 {
   while(1)
