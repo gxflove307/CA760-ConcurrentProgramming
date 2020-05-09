@@ -1,0 +1,2 @@
+# CA760-ConcurrentProgramming
+1. OpenMPProducerConsumer.cpp文件是解决具有固定数量的生产者消费者问题的实现
