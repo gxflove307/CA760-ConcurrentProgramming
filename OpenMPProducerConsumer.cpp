@@ -37,12 +37,13 @@ QMutex:目的是保护对象，数据结构或代码段，以便一次只能有�
 
 */
 void integrate (Slice ∗buffer , QSemaphore &buff_slots, QSemaphore &avail, QMutex &mutex, int &out, 
-                QMutex &res lock, double &res)
+                QMutex &result_lock, double &result)
 {
   while(1)
   {
     avail.acquire();//尝试获取由信号量保护的n种资源（这里只有1种资源）
     mutex.lock();//获取锁后，锁定并进入临界区
+    
     int tmp_out = out;
     out = (out + 1) % BUFFER_SIZE;
     mutex.unlock(); //执行完临界区的数据操作后，释放锁
@@ -60,17 +61,17 @@ void integrate (Slice ∗buffer , QSemaphore &buff_slots, QSemaphore &avail, QMu
     
     double step = (en − st) / div;
     double x = st;
-    double local_res = (func (st) + func (en)) / 2;
+    double local_res = (func(st) + func (en)) / 2;
     for (int i = 0; i < div; i++)
     {
       x += step;
-      local_res += func (x);
+      local_res += func(x);
     }
     local_res ∗= step ;
     
-    res_lock.lock ();
-    res += local_res;
-    res_lock.unlock();
+    result_lock.lock ();
+    result += local_res;
+    result_lock.unlock();
   }
 }
 
@@ -82,47 +83,51 @@ int main (int argc , char ∗∗argv)
     exit (1);
   }
   
-  int J = atoi (argv[1]); //把从外部传入的第二个字符串转换成Integer类型的数据，这里定义的是要把这个区间分成多少个小梯形
+  int batch_size = atoi (argv[1]); //把从外部传入的第二个字符串转换成Integer类型的数据，这里定义的是要把这个区间分成多少批次执行
   Slice ∗buffer = new Slice[BUFF_SIZE];
-  int in=0; out=0;
+  int in=0; 
+  int out=0;
   QSemaphore avail , buff_slots(BUFF_SIZE);
-  QMutex mutex , integ_lock ;
-  double integral = 0;
+  QMutex mutex;
+  QMutex result_lock ;
+  double integral = 0; //存储积分结果
   
   /*
     parallel sections 定义了一个大的并行区，使得内部的section块可以由多个线程并行执行
   */
-  #pragma omp parallel sections default(none) shared(buffer, in, out, avail, buff_slots, mutex, integ_lock, integeral, J)
+  #pragma omp parallel sections default(none) shared(buffer, in, out, avail, buff_slots, mutex, integ_lock, integeral, batch_size)
   {
-    // producer：这里的producer的主要任务是定义好每个小梯形的上边界、下界和。。。
+    // producer：这里的producer的主要任务是定义好每个梯形的上边界、下界和。。。
     #pragma omp section
     {
-      double div_len = (UPPER_LIMIT − LOWER_LIMIT /J;
+      double div_len = (UPPER_LIMIT − LOWER_LIMIT /batch_size;
       double st, end = LOWER_LIMIT;
       
-      for (int i = 0; i < J; i++)
+      for (int i = 0; i < batch_size; i++)
       {
         st = end;
         end += div_len;
-        if ( i == ( J − 1 ) ) //如果梯形的总个数恰好是当前迭代，说明这个上界和下界的积分只相差一个小梯形的面积。这时候，直接把积分上界值设置为本次迭代的积分上界的
+        if ( i == ( batch_size − 1 ) ) //如果当前迭代执行到最后一个批次了，那么把积分上界定义为最后一个sclice的上界
         {
           end = UPPER_LIMIT;
         }
         
         // 进入临界区
         buff_slots.acquire ();
-        buffer[in].start = st;
+        buffer[in].start = st; //把每个批次的积分上界和下界存到对应位置的缓冲区中，
+                                //比如：对于下界是100，下界是0，要分成10个批次的定积分来说，第一个批次/迭代的上界和下界是0~10，
+                                //第二个批次/迭代的上界和下界是11~20，依此类推
         buffer[in].end = end;
-        buffer [in]. divisions = 1000;
+        buffer [in].divisions = 1000;//把每个批次切分成1000个小区间的小梯形来计算
         in = (in + 1) % BUFF_SIZE；
-        avail.release ();
+        avail.release ();  //释放锁
         
         // add termination sentinels to the buffer
         for (i = 0; i < NUM_CONSUMERS; i++)
         {
           buff_slots.acquire ();
-          buffer[in].divisions = 0; 
-          in = (in + 1) % BUFF_SIZE; 
+          buffer[in].divisions = 0;
+          in = (in + 1) % BUFF_SIZE;
           avail.release ();
         }
       }
@@ -131,13 +136,13 @@ int main (int argc , char ∗∗argv)
     // 1st consumer
     #pragma omp section
     {
-      integrate(buffer, buff_slots, avail, mutex, out, integ_lock, integral);
+      integrate(buffer, buff_slots, avail, mutex, out, result_lock, integral);
     }
     
     // 1nd consumer
     #pragma omp section
     {
-      integrate(buffer, buff_slots, avail, mutex, out, integ_lock, integral);
+      integrate(buffer, buff_slots, avail, mutex, out, result_lock, integral);
     }
     
     cout << ”Result is ” << integral << endl ;
