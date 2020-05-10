@@ -44,8 +44,7 @@ void test(int phnum)
 
 // take up chopsticks 
 void take_fork(int phnum) 
-{ 
-
+{
 	sem_wait(&mutex); 
 
 	// state that hungry 
@@ -67,14 +66,12 @@ void take_fork(int phnum)
 // put down chopsticks 
 void put_fork(int phnum) 
 { 
-
 	sem_wait(&mutex); 
 
 	// state that thinking 
 	state[phnum] = THINKING; 
 
-	printf("Philosopher %d putting fork %d and %d down\n", 
-		phnum + 1, LEFT + 1, phnum + 1); 
+	printf("Philosopher %d putting fork %d and %d down\n", phnum + 1, LEFT + 1, phnum + 1); 
 	printf("Philosopher %d is thinking\n", phnum + 1); 
 
 	test(LEFT); 
@@ -85,9 +82,8 @@ void put_fork(int phnum)
 
 void* philospher(void* num) 
 { 
-
-	while (1) { 
-
+	while (1) 
+	{ 
 		int* i = num; 
 
 		sleep(1); 
@@ -97,7 +93,7 @@ void* philospher(void* num)
 		sleep(0); 
 
 		put_fork(*i); 
-	} 
+	}
 } 
 
 int main() 
@@ -110,21 +106,20 @@ int main()
 	sem_init(&mutex, 0, 1); 
 
 	for (i = 0; i < N; i++) 
-
-		sem_init(&S[i], 0, 0); 
+	{
+		sem_init(&S[i], 0, 0);
+	} 
 
 	for (i = 0; i < N; i++) 
-  { 
-
+  	{ 
 		// create philosopher processes 
-		pthread_create(&thread_id[i], NULL, 
-					philospher, &phil[i]); 
+		pthread_create(&thread_id[i], NULL, philospher, &phil[i]); 
 
 		printf("Philosopher %d is thinking\n", i + 1); 
 	} 
 
 	for (i = 0; i < N; i++) 
-  {
-    pthread_join(thread_id[i], NULL); 
-  }
+  	{
+    		pthread_join(thread_id[i], NULL); 
+  	}
 } 
