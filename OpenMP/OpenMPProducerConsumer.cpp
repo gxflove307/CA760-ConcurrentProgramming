@@ -109,7 +109,7 @@ int main (int argc , char ∗∗argv)
     // producer：这里的producer的主要任务是定义好每个梯形的上边界、下界和。。。
     #pragma omp section
     {
-      double div_len = (UPPER_LIMIT − LOWER_LIMIT /batch_size;
+      double div_len = (UPPER_LIMIT − LOWER_LIMIT) /batch_size;
       double st, end = LOWER_LIMIT;
       
       for (int i = 0; i < batch_size; i++)
