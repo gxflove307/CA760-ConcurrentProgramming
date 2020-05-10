@@ -23,10 +23,13 @@ const char *saxpy_kernel =
 int main(void) {
   int i;
   // Allocate space for vectors A, B and C
+  // 为三个向量分配内存空间
   float alpha = 2.0;
   float *A = (float*)malloc(sizeof(float)*VECTOR_SIZE);
   float *B = (float*)malloc(sizeof(float)*VECTOR_SIZE);
   float *C = (float*)malloc(sizeof(float)*VECTOR_SIZE);
+  
+  //初始化三个向量，A={0,1,2,...,1023}, B={1023,1022,1021,...,0}, C={0,0,0...,0}
   for(i = 0; i < VECTOR_SIZE; i++)
   {
     A[i] = i;
@@ -35,10 +38,10 @@ int main(void) {
   }
 
   // Get platform and device information
-  cl_platform_id * platforms = NULL;
-  cl_uint     num_platforms;
+  cl_platform_id * platforms = NULL; // 定义平台
+  cl_uint num_platforms;  //定义获取的平台号
   //Set up the Platform
-  cl_int clStatus = clGetPlatformIDs(0, NULL, &num_platforms);
+  cl_int clStatus = clGetPlatformIDs(0, NULL, &num_platforms); //获取
   platforms = (cl_platform_id *)
   malloc(sizeof(cl_platform_id)*num_platforms);
   clStatus = clGetPlatformIDs(num_platforms, platforms, NULL);
